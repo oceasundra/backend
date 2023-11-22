@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
@@ -15,7 +16,7 @@ class Project extends Model
         'title',
         'image',
         'url',
-        'desc'
+        'desc',
     ];
 
     public function getRouteKeyName()
@@ -29,9 +30,4 @@ class Project extends Model
         });
     }
 
-    protected function image(): Attribute {
-        return Attribute::make(
-            get: fn ($image) => asset('/storage/projects/' . $image),
-        );
-    }
 }

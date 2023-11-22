@@ -4,11 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Http\Resources\ProjectResource;
 use App\Models\Project;
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Str;
-
 
 class ProjectController extends Controller
 {
@@ -45,12 +43,11 @@ class ProjectController extends Controller
             return response()->json($validator->errors(), 422);
         }
 
-        $image = $request->file('image');
-        $image->storeAs('public/projects', $image->hashName());
-
+        $uploadedFile = Cloudinary::upload($request->file('image')->getRealPath())->getSecurePath();
+        
         $project = Project::create([
             'title' => $request->title,
-            'image' => $image->hashName(),
+            'image' => $uploadedFile,
             'url' => $request->url,
             'desc' => $request->desc
         ]);
@@ -84,15 +81,12 @@ class ProjectController extends Controller
         }
 
         if ($request->hasFile('image')) {
-            $image = $request->file('image');
-            $image->storeAs('public/projects', $image->hashName());
 
-            //delete old image
-            Storage::delete('public/projects/'.basename($project->image));
+            $uploadedFile = Cloudinary::upload($request->file('image')->getRealPath())->getSecurePath();
 
             //update post with new image
             $project->update([
-                'image'     => $image->hashName(),
+                'image' => $uploadedFile,
                 'title'     => $request->title,
                 'url'   => $request->url,
                 'desc'   => $request->desc,
@@ -118,13 +112,9 @@ class ProjectController extends Controller
     {
         $this->authorize('if_admin');
         
-        Storage::delete('public/projects/'.basename($project->image));
-        
         $project->delete();
 
         return new ProjectResource(true, 'Project Berhasil Dihapus', null);
-
-        
-
     }
+
 }
